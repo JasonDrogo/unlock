@@ -7,7 +7,7 @@ import 'unlock-abi-1-3/IPublicLockV6.sol';
 /**
  * @notice A factory for creating keyPurchasers.
  * This contract acts as a registry to discover purchasers for a lock
- * and by creating each purchaser itself, it's a single tx and this garantees
+ * and by creating each purchaser itself, it's a single tx and this guarantees
  * a consistent implementation and that it was created by the lock owner.
  */
 contract KeyPurchaserFactory
