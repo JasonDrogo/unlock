@@ -1,14 +1,8 @@
-const {
-  constants,
-  protocols,
-  tokens,
-} = require('hardlydifficult-ethereum-contracts')
+const { protocols, tokens } = require('hardlydifficult-ethereum-contracts')
 
 const KeyPurchaserFactory = artifacts.require('KeyPurchaserFactory.sol')
 const KeyPurchaser = artifacts.require('KeyPurchaser.sol')
 const { reverts } = require('truffle-assertions')
-const BigNumber = require('bignumber.js')
-const { time } = require('@openzeppelin/test-helpers')
 
 contract('keyPurchaserFactory', accounts => {
   const [endUser, lockCreator, tokenMinter, otherAccount] = accounts
