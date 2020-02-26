@@ -292,17 +292,22 @@ contract('keyPurchaser', accounts => {
   })
 
   describe('free purchase', () => {
-    let endUserBalanceBefore
+    let freeLock
 
     beforeEach(async () => {
-      endUserBalanceBefore = await dai.balanceOf(endUser)
-      await keyPurchaser.initialize(constants.ZERO_ADDRESS, 0, 0, 0, false, {
+      freeLock = await protocols.unlock.createTestLock(web3, {
+        keyPrice: 0,
+        expirationDuration: 30, // 30 seconds
+        from: lockCreator,
+      })
+      await keyPurchaser.initialize(freeLock.address, 0, 0, 0, false, {
         from: lockCreator,
       })
     })
 
     it('purchase fails if the lock price increased', async () => {
-      await lock.updateKeyPricing('1', dai.address, { from: lockCreator })
+      await freeLock.updateKeyPricing('1', dai.address, { from: lockCreator })
+      await keyPurchaser.approveSpending()
       await reverts(
         keyPurchaser.purchaseFor(endUser, constants.ZERO_ADDRESS, [], {
           from: otherAccount,
@@ -319,7 +324,7 @@ contract('keyPurchaser', accounts => {
       })
 
       it('purchase successful', async () => {
-        assert.equal(await lock.getHasValidKey(endUser), true)
+        assert.equal(await freeLock.getHasValidKey(endUser), true)
       })
 
       it('purchase is single use only', async () => {

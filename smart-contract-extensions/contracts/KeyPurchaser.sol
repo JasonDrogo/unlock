@@ -49,7 +49,6 @@ contract KeyPurchaser is Initializable, Stoppable
   ) public
     initializer()
   {
-    require(_maxKeyPrice > 0, 'INVALID_MAX_KEYPRICE');
     require(_renewWindow > 0 || !_isSubscription, 'INVALID_RENEW_WINDOW');
     require(_renewMinFrequency > 0 || !_isSubscription, 'INVALID_RENEW_MINFREQUENCY');
 
@@ -59,7 +58,7 @@ contract KeyPurchaser is Initializable, Stoppable
     renewWindow = _renewWindow;
     renewMinFrequency = _renewMinFrequency;
     isSubscription = _isSubscription;
-    approve();
+    approveSpending();
   }
 
   /**
@@ -67,12 +66,12 @@ contract KeyPurchaser is Initializable, Stoppable
    * @dev Automatically called on initialize, needs to be called again if the tokenAddress changes.
    * No permissions required, it's okay to call this again.
    */
-  function approve() public
+  function approveSpending() public
   {
     IERC20 token = IERC20(lock.tokenAddress());
     if(address(token) != address(0))
     {
-      token.safeApprove(address(lock), uint(-1));
+      token.approve(address(lock), uint(-1));
     }
   }
 
