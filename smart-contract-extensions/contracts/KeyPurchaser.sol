@@ -128,19 +128,19 @@ contract KeyPurchaser is Initializable, Stoppable
     {
       require(temp <= maxKeyPrice, 'PRICE_TOO_HIGH');
 
-      // We don't need safeTransfer as if these do not work the purchase will fail
+      // We don't need safeTransfer as if this does not work the purchase will fail
       token.transferFrom(_user, address(this), temp);
       // approve is already complete
     }
 
-    lock.purchase(temp, _user, _referrer, _data);
     timeOfLastPurchase[_user] = now;
+    lock.purchase(temp, _user, _referrer, _data);
 
     // RE events: it's not clear emitting an event adds value over the ones from purchase and the token
 
     // During normal use there will be no balance remaining in the contract
     // But just in case of a new feature in Locks.
-    // Testing shows the balance checks for this costs 1478 gas - very cheap.
+    // Testing shows the balance checks for this costs < 2k gas
 
     // Refund ETH
     temp = address(this).balance;
