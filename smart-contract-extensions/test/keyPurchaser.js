@@ -290,4 +290,46 @@ contract('keyPurchaser', accounts => {
       })
     })
   })
+
+  describe('free purchase', () => {
+    let endUserBalanceBefore
+
+    beforeEach(async () => {
+      endUserBalanceBefore = await dai.balanceOf(endUser)
+      await keyPurchaser.initialize(constants.ZERO_ADDRESS, 0, 0, 0, false, {
+        from: lockCreator,
+      })
+    })
+
+    it('purchase fails if the lock price increased', async () => {
+      await lock.updateKeyPricing('1', dai.address, { from: lockCreator })
+      await reverts(
+        keyPurchaser.purchaseFor(endUser, constants.ZERO_ADDRESS, [], {
+          from: otherAccount,
+        }),
+        'PRICE_TOO_HIGH'
+      )
+    })
+
+    describe('anyone can purchase for the endUser', () => {
+      beforeEach(async () => {
+        await keyPurchaser.purchaseFor(endUser, constants.ZERO_ADDRESS, [], {
+          from: otherAccount,
+        })
+      })
+
+      it('purchase successful', async () => {
+        assert.equal(await lock.getHasValidKey(endUser), true)
+      })
+
+      it('purchase is single use only', async () => {
+        await reverts(
+          keyPurchaser.purchaseFor(endUser, constants.ZERO_ADDRESS, [], {
+            from: otherAccount,
+          }),
+          'SINGLE_USE_ONLY'
+        )
+      })
+    })
+  })
 })

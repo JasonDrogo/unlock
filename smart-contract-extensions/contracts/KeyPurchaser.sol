@@ -70,7 +70,10 @@ contract KeyPurchaser is Initializable, Stoppable
   function approve() public
   {
     IERC20 token = IERC20(lock.tokenAddress());
-    token.safeApprove(address(lock), uint(-1));
+    if(address(token) != address(0))
+    {
+      token.safeApprove(address(lock), uint(-1));
+    }
   }
 
   /**
@@ -119,13 +122,13 @@ contract KeyPurchaser is Initializable, Stoppable
     }
 
     temp = lock.keyPrice();
+    // It's okay if the lock changes tokenAddress as the ERC-20 approval is specifically
+    // the token the endUser wanted to spend
+    IERC20 token = IERC20(lock.tokenAddress());
     if(temp > 0)
     {
       require(temp <= maxKeyPrice, 'PRICE_TOO_HIGH');
 
-      // It's okay if the lock changes tokenAddress as the ERC-20 approval is specifically
-      // the token the endUser wanted to spend
-      IERC20 token = IERC20(lock.tokenAddress());
       // We don't need safeTransfer as if these do not work the purchase will fail
       token.transferFrom(_user, address(this), temp);
       // approve is already complete
@@ -148,10 +151,13 @@ contract KeyPurchaser is Initializable, Stoppable
     }
 
     // Refund tokens
-    temp = token.balanceOf(address(this));
-    if(temp > 0)
+    if(address(token) != address(0))
     {
-      token.safeTransfer(msg.sender, temp);
+      temp = token.balanceOf(address(this));
+      if(temp > 0)
+      {
+        token.safeTransfer(msg.sender, temp);
+      }
     }
   }
 }
