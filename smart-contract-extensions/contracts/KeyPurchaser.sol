@@ -35,7 +35,7 @@ contract KeyPurchaser is Initializable, Stoppable
   bool internal disabled;
 
   // store minimal history
-  mapping(address => uint) timeOfLastPurchase;
+  mapping(address => uint) public timeOfLastPurchase;
 
   /**
    * @notice Called once to set terms that cannot change later on.
