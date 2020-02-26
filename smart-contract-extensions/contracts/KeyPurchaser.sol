@@ -59,6 +59,18 @@ contract KeyPurchaser is Initializable, Stoppable
     renewWindow = _renewWindow;
     renewMinFrequency = _renewMinFrequency;
     isSubscription = _isSubscription;
+    approve();
+  }
+
+  /**
+   * @notice Approves the lock to spend funds held by this contract.
+   * @dev Automatically called on initialize, needs to be called again if the tokenAddress changes.
+   * No permissions required, it's okay to call this again.
+   */
+  function approve() public
+  {
+    IERC20 token = IERC20(lock.tokenAddress());
+    token.safeApprove(address(lock), uint(-1));
   }
 
   /**
@@ -107,14 +119,18 @@ contract KeyPurchaser is Initializable, Stoppable
     }
 
     temp = lock.keyPrice();
-    require(temp <= maxKeyPrice, 'PRICE_TOO_HIGH');
+    if(temp > 0)
+    {
+      require(temp <= maxKeyPrice, 'PRICE_TOO_HIGH');
 
-    // It's okay if the lock changes tokenAddress as the ERC-20 approval is specifically
-    // the token the endUser wanted to spend
-    IERC20 token = IERC20(lock.tokenAddress());
-    // We don't need safeTransfer or safeApprove as if these do not work the purchase will fail
-    token.transferFrom(_user, address(this), temp);
-    token.approve(address(lock), temp);
+      // It's okay if the lock changes tokenAddress as the ERC-20 approval is specifically
+      // the token the endUser wanted to spend
+      IERC20 token = IERC20(lock.tokenAddress());
+      // We don't need safeTransfer as if these do not work the purchase will fail
+      token.transferFrom(_user, address(this), temp);
+      // approve is already complete
+    }
+
     lock.purchase(temp, _user, _referrer, _data);
     timeOfLastPurchase[_user] = now;
 
